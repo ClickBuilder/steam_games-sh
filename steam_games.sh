@@ -38,13 +38,38 @@ if ! pgrep -x "steam" > /dev/null; then
     if [[ "$startSteam" == "y" ]]; then
         echo -e "${GREEN}    Запуск Steam...${NC}"
         nohup steam &>/dev/null &  # Запускаем Steam в фоновом режиме с nohup
-        sleep 5  # Ждем 5 секунд, чтобы дать Steam время на запуск
     else
         echo -e "${RED}    Выход из скрипта.${NC}"
         exit 1
     fi
 fi
 
+# Функция для скрытия окон Steam
+hide_steam_windows() {
+    while true; do
+        # Скрываем окно "Вход в Steam", если оно открыто
+        if wmctrl -l | grep -q "Вход в Steam"; then
+            wmctrl -r "Вход в Steam" -b add,hidden
+        fi
+
+        # Скрываем окно "Steam", если оно открыто
+        if wmctrl -l | grep -q "Steam"; then
+            wmctrl -r "Steam" -b add,hidden
+        fi
+
+        # Задержка перед следующей проверкой
+        sleep 1
+    done
+}
+
+# Запуск функции скрытия окон в фоновом режиме
+hide_steam_windows &
+
+# Ожидание появления окна Steam
+while ! wmctrl -l | grep -q "Steam"; do
+    echo -e "${YELLOW}    Ожидание запуска Steam...${NC}"
+    sleep 1
+done
 
 # Извлечение названий игр и их идентификаторов
 declare -a games
@@ -93,4 +118,5 @@ if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 0 ] && [ "$choice" -lt "${#gam
     fi
 else
     echo -e "${RED}    Некорректный выбор. Пожалуйста, введите номер из списка.${NC}"
+    exit 1
 fi
