@@ -32,6 +32,20 @@ else
     echo "$steamAppsPath" > "$pathFile"
 fi
 
+# Проверка, запущен ли Steam
+if ! pgrep -x "steam" > /dev/null; then
+    read -p "Steam не запущен. Хотите запустить его? (y/n): " startSteam
+    if [[ "$startSteam" == "y" ]]; then
+        echo -e "${GREEN}    Запуск Steam...${NC}"
+        nohup steam &>/dev/null &  # Запускаем Steam в фоновом режиме с nohup
+        sleep 5  # Ждем 5 секунд, чтобы дать Steam время на запуск
+    else
+        echo -e "${RED}    Выход из скрипта.${NC}"
+        exit 1
+    fi
+fi
+
+
 # Извлечение названий игр и их идентификаторов
 declare -a games
 declare -a ids
